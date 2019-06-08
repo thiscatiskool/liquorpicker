@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+    <head>
+        <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta http-equiv="X-UA-Compatible" content="ie=edge">
+                    <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.js"></script>
+                    <title>Liquer Picker Wiki</title>
+    </head>
+    
+    <body>
+        <input id="seachtext" type="text" placeholder="Search">
+            <button id="searchwiki-btn" type="submit">Search</button>
+            <div id="article"></div>
+            
+            <script type="text/javascript">
+                //Telling the document that it is time to play ball
+                $(document).ready(function () {
+                                  
+                                  //creating a variable to store the searched object
+                                  var searchText
+                                  
+                                  //Suppose to click the search button when pressing the Enter button
+                                  $("#searchwiki-btn").keyup(function (event) {
+                                                             if (event.keyCode === 13) {
+                                                             $("#searchwiki").click();
+                                                             }
+                                                             });
+                                  
+                                  //Takes the text entered in the search bar and sends it to the searchText variable, then empties the search bar
+                                  $("#searchwiki-btn").on("click", function (event) {
+                                                          event.preventDefault();
+                                                          
+                                                          searchText = $("#seachtext").val().trim();
+                                                          
+                                                          console.log(searchText);
+                                                          $("#searchtext").empty("")
+                                                          });
+                                  
+                                  //Getting all the goods from Wikipedia
+                                  $.ajax({
+                                         type: "GET",
+                                         //the API URL with the searchText variable placed inside
+                                         url: "http://en.wikipedia.org/w/api.php?action=parse&format=json&prop=text&section=0&page=" + searchText + "&callback=?",
+                                         
+                                         contentType: "application/json; charset=utf-8",
+                                         
+                                         async: false,
+                                         
+                                         dataType: "json",
+                                         
+                                         success: function (data, textStatus, jqXHR) {
+                                         
+                                         var markup = data.parse.text["*"];
+                                         var blurb = $('<div></div>').html(markup);
+                                         console.log(blurb)
+                                         
+                                         // remove links as they will not work
+                                         blurb.find('a').each(function () {
+                                                              $(this).replaceWith($(this).html());
+                                                              });
+                                         
+                                         // remove any references
+                                         blurb.find('sup').remove();
+                                         
+                                         // remove cite error
+                                         blurb.find('.mw-ext-cite-error').remove();
+                                         $('#article').html($(blurb).find('p').text().slice(0,100));
+                                         
+                                         },
+                                         error: function (errorMessage) {}
+                                         });
+                                  });
+                </script>
+    </body>
+    
+</html>
